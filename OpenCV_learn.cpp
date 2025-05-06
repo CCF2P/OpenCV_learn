@@ -77,7 +77,7 @@ void example2()
 	cv::Mat img = cv::imread(path);
 
 	// Переменные для хранения измененных изображений
-	cv::Mat imgGray, imgBlur, imgThresh;
+	cv::Mat imgGray, imgBlur, imgGaussian, imgThresh;
 
 	/*
 	cvtColor() - функция, которая конвертирует изображение из одного
@@ -97,18 +97,73 @@ void example2()
 	COLOR_BGR2GRAY - аналогично COLOR_RGB2GRAY, только для BGR.
 	И другие... (смотри сайт с документацией)
 	*/
-	cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
+	cv::cvtColor(img, imgGray, cv::COLOR_BGR2GRAY);
 
-	GaussianBlur(imgGray, imgBlur, cv::Size(7, 7), 5, 0);
+	/*
+	Функции для размытия (сглаживания) изображения:
 
+	1 - blur() - усредненное размытие.
+	Параметры:
+	InputArray src - изображение, которе необходимо размыть
+	OutputArray dst - изображение, которе будет хранить результат размытия
+	Size ksize - размер ядра по которому будет считаться усреденение
+	Point anchor - точка привязки ядра, по умолчанию равна (-1, -1) это значит, что
+	точка находится в середине ядра. Т.к. ядро это матрица, то можно указать какой-нибудь
+	элемент матрицы в который будет записывать высчитанное размытие. Если указать (0, 0) или (3, 3)
+	(при условии, что ядро 4х4), то в результате размытие будет смещено в левый верхний или правый нижний угол.
+	int borderType - режим границы, используемый для экстраполяции пикселей за пределами изображения.
+	(Смотри документацию - BorderTypes)
+
+	2 - GaussianBlur() - взвешенное среднее размытие.
+	Параметры:
+	InputArray src - изображение, которе необходимо размыть
+	OutputArray dst - изображение, которе будет хранить результат размытия
+	Size ksize - размер ядра по которому будет считаться взвешенное усреденение. Размер ядро
+	должен состоят из нечетных чисел!!!
+	int sigmaX, simgaY - отклонение гауссового ядра по оси X и Y. Если sigmaY равно нулю,
+	оно устанавливается равным sigmaX, если оба sigma равны нулю, они вычисляются и
+	ksize.width и ksize.height соответственно
+	AlgorithmHint hint - флаг для изменения поведения реализации функции. (см. AlgorithmHint)
+
+	3 - И другие... (смотри сайт с документацией)
+	*/
+	cv::blur(img, imgBlur, cv::Size(4, 4), cv::Point(3, 3));
+	cv::GaussianBlur(imgGray, imgGaussian, cv::Size(7, 7), 5, 0);
+
+	/*
+	threshold() - функция для приведения изображения к двум цветам - черному и белому.
+	Для этого лучше всего заранее перевести изображение к оттенкам серого (grayscale).
+
+	Параметры:
+	InputArray src - изображение, которе необходимо размыть
+	OutputArray dst - изображение, которе будет хранить результат функции
+	double thresh - пороговое значение. Если значение пикселя меньше порогового значения, то
+	пикселю присваивается 0, иначе 1.
+	double maxval - определяет значение, которое присваивается пикселям, удовлетворяющим условию порога.
+	int type - тип порога (см. ThresholdTypes)
+	*/
 	cv::threshold(imgBlur, imgThresh, 100, 200, cv::THRESH_BINARY);
 
 
 	cv::imshow("Grayscale", imgGray);
-	cv::imshow("GaussianBlur", imgBlur);
+	cv::imshow("Blur", imgBlur);
+	cv::imshow("GaussianBlur", imgGaussian);
+	cv::waitKey(0);
 }
 
 void example3()
+{
+	cv::Mat img(256, 256, CV_8UC3);
+
+	cv::circle(img, cv::Point(128, 128), 64, cv::Scalar(0, 0, 0), 3);
+	cv::rectangle(img, cv::Rect(64, 128, 128, 128), cv::Scalar(255, 0, 255), 3);
+
+	imshow("Image", img);
+
+	cv::waitKey(0);
+}
+
+void example4()
 {
 	cv::VideoCapture videoCap(0);
 	cv::CascadeClassifier facedetect;
@@ -141,15 +196,7 @@ void example3()
 
 int main(int argc, char* argv[])
 {
-	/*
-	cv::Mat img(256, 256, CV_8UC3);
-
-	cv::circle(img, cv::Point(128, 128), 64, cv::Scalar(0, 0, 0), 3);
-	cv::rectangle(img, cv::Rect(64, 128, 128, 128), cv::Scalar(255, 0, 255), 3);
-
-	imshow("Image", img);
-
-	cv::waitKey(0);
-	*/
+	example2();
+	
 	return 0;
 }
